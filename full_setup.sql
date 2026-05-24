@@ -32,6 +32,7 @@ DROP POLICY IF EXISTS "select_pending_moderator" ON public.articulos;
 DROP POLICY IF EXISTS "update_moderator" ON public.articulos;
 DROP POLICY IF EXISTS "insert_writer" ON public.articulos;
 DROP POLICY IF EXISTS "insert_any_authenticated" ON public.articulos;
+DROP POLICY IF EXISTS "delete_moderator_admin" ON public.articulos;
 
 -- ============================================================================
 -- PASO 2: ALTERAR LA COLUMNA "rol" DE ENUM A TEXT DE FORMA SEGURA
@@ -172,6 +173,10 @@ CREATE POLICY "insert_any_authenticated" ON public.articulos
 -- Solo moderadores y admins pueden editar o cambiar el estado de los artículos
 CREATE POLICY "update_moderator" ON public.articulos
   FOR UPDATE USING (public.es_moderador_o_admin(auth.uid()));
+
+-- Solo moderadores y admins pueden eliminar artículos
+CREATE POLICY "delete_moderator_admin" ON public.articulos
+  FOR DELETE USING (public.es_moderador_o_admin(auth.uid()));
 
 
 -- ============================================================================
