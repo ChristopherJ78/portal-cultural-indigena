@@ -34,6 +34,11 @@ DROP POLICY IF EXISTS "insert_writer" ON public.articulos;
 DROP POLICY IF EXISTS "insert_any_authenticated" ON public.articulos;
 DROP POLICY IF EXISTS "delete_moderator_admin" ON public.articulos;
 
+-- --- POLÍTICAS DE LA TABLA comentarios ---
+DROP POLICY IF EXISTS "select_public_comentarios" ON public.comentarios;
+DROP POLICY IF EXISTS "insert_own_comentarios" ON public.comentarios;
+DROP POLICY IF EXISTS "delete_own_or_mod_comentarios" ON public.comentarios;
+
 -- ============================================================================
 -- PASO 2: ALTERAR LA COLUMNA "rol" DE ENUM A TEXT DE FORMA SEGURA
 -- ============================================================================
@@ -69,6 +74,19 @@ CREATE TABLE IF NOT EXISTS public.solicitudes_rol (
 
 CREATE INDEX IF NOT EXISTS idx_solicitudes_status ON public.solicitudes_rol(status);
 CREATE INDEX IF NOT EXISTS idx_solicitudes_user   ON public.solicitudes_rol(user_id);
+
+-- ============================================================================
+-- PASO 4.5: CREAR / ACTUALIZAR TABLA DE COMENTARIOS
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.comentarios (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  texto text NOT NULL,
+  usuario_id uuid REFERENCES public.usuarios(id) ON DELETE CASCADE,
+  articulo_id uuid REFERENCES public.articulos(id) ON DELETE CASCADE,
+  fecha timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_comentarios_articulo ON public.comentarios(articulo_id);
 
 -- ============================================================================
 -- PASO 5: CREAR FUNCIONES AUXILIARES CON 'SECURITY DEFINER'
@@ -114,6 +132,7 @@ GRANT EXECUTE ON FUNCTION public.es_admin(uuid) TO authenticated, anon;
 ALTER TABLE public.usuarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.solicitudes_rol ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.articulos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.comentarios ENABLE ROW LEVEL SECURITY;
 
 -- --- POLÍTICAS DE LA TABLA: usuarios ---
 
@@ -177,6 +196,23 @@ CREATE POLICY "update_moderator" ON public.articulos
 -- Solo moderadores y admins pueden eliminar artículos
 CREATE POLICY "delete_moderator_admin" ON public.articulos
   FOR DELETE USING (public.es_moderador_o_admin(auth.uid()));
+
+-- --- POLÍTICAS DE LA TABLA: comentarios ---
+
+-- Cualquier persona puede leer los comentarios de un artículo
+CREATE POLICY "select_public_comentarios" ON public.comentarios
+  FOR SELECT USING (true);
+
+-- Cualquier usuario autenticado puede publicar comentarios
+CREATE POLICY "insert_own_comentarios" ON public.comentarios
+  FOR INSERT WITH CHECK (auth.uid() = usuario_id);
+
+-- Un usuario puede eliminar su propio comentario, o moderadores/admins cualquier comentario
+CREATE POLICY "delete_own_or_mod_comentarios" ON public.comentarios
+  FOR DELETE USING (
+    auth.uid() = usuario_id 
+    OR public.es_moderador_o_admin(auth.uid())
+  );
 
 
 -- ============================================================================

@@ -20,12 +20,29 @@ interface Imagen {
   descripcion?: string;
 }
 
+interface Comentario {
+  id: string;
+  texto: string;
+  usuario_id: string;
+  fecha: string;
+  usuarios?: {
+    nombre: string;
+    email: string;
+  } | null;
+}
+
 export default function DetalleArticulo({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [articulo, setArticulo] = useState<Articulo | null>(null);
   const [imagenes, setImagenes] = useState<Imagen[]>([]);
+  const [comentarios, setComentarios] = useState<Comentario[]>([]);
   const [cargando, setCargando] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
+  
+  const [usuarioActual, setUsuarioActual] = useState<string | null>(null);
+  const [rolUsuario, setRolUsuario] = useState('visitante');
+  const [nuevoComentario, setNuevoComentario] = useState('');
+  const [publicandoComentario, setPublicandoComentario] = useState(false);
 
   useEffect(() => {
     async function inicializar() {
@@ -35,6 +52,7 @@ export default function DetalleArticulo({ params }: { params: Promise<{ id: stri
       let userRole = 'visitante';
       if (session?.user) {
         userId = session.user.id;
+        setUsuarioActual(userId);
         const { data: userData } = await supabase
           .from('usuarios')
           .select('rol')
@@ -42,6 +60,7 @@ export default function DetalleArticulo({ params }: { params: Promise<{ id: stri
           .single();
         if (userData) {
           userRole = userData.rol;
+          setRolUsuario(userRole);
         }
       }
 
@@ -82,11 +101,80 @@ export default function DetalleArticulo({ params }: { params: Promise<{ id: stri
         setImagenes(imgData as Imagen[]);
       }
 
+      // 5. Obtener los comentarios asociados
+      const { data: comData } = await supabase
+        .from('comentarios')
+        .select('*, usuarios(nombre, email)')
+        .eq('articulo_id', id)
+        .order('fecha', { ascending: true });
+
+      if (comData) {
+        const formattedComs = (comData as unknown as {
+          id: string;
+          texto: string;
+          usuario_id: string;
+          fecha: string;
+          usuarios: { nombre: string; email: string } | { nombre: string; email: string }[] | null;
+        }[]).map(c => ({
+          ...c,
+          usuarios: Array.isArray(c.usuarios) ? c.usuarios[0] : (c.usuarios || null)
+        })) as Comentario[];
+        setComentarios(formattedComs);
+      }
+
       setCargando(false);
     }
 
     inicializar();
   }, [id]);
+
+  async function handleEnviarComentario(e: React.FormEvent) {
+    e.preventDefault();
+    if (!usuarioActual || !nuevoComentario.trim()) return;
+    setPublicandoComentario(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('comentarios')
+        .insert({
+          texto: nuevoComentario.trim(),
+          articulo_id: id,
+          usuario_id: usuarioActual
+        })
+        .select('*, usuarios(nombre, email)');
+
+      if (error) {
+        alert('Error al publicar comentario: ' + error.message);
+      } else if (data) {
+        const insertado = data[0];
+        const formatted = {
+          ...insertado,
+          usuarios: Array.isArray(insertado.usuarios) ? insertado.usuarios[0] : (insertado.usuarios || null)
+        } as Comentario;
+        setComentarios(prev => [...prev, formatted]);
+        setNuevoComentario('');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPublicandoComentario(false);
+    }
+  }
+
+  async function handleEliminarComentario(comId: string) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este comentario?')) return;
+
+    const { error } = await supabase
+      .from('comentarios')
+      .delete()
+      .eq('id', comId);
+
+    if (error) {
+      alert('Error al eliminar comentario: ' + error.message);
+    } else {
+      setComentarios(prev => prev.filter(c => c.id !== comId));
+    }
+  }
 
   if (cargando) {
     return (
@@ -158,8 +246,75 @@ export default function DetalleArticulo({ params }: { params: Promise<{ id: stri
         )}
 
         {/* Contenido / Descripción */}
-        <section style={{ fontSize: '1.1rem', lineHeight: '1.7', whiteSpace: 'pre-wrap', color: '#e2e8f0' }}>
+        <section style={{ fontSize: '1.1rem', lineHeight: '1.7', whiteSpace: 'pre-wrap', color: '#e2e8f0', borderBottom: '1px solid var(--glass-border)', paddingBottom: '2.5rem' }}>
           {articulo.descripcion}
+        </section>
+
+        {/* Sección de Comentarios */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
+          <h3 style={{ fontSize: '1.5rem', margin: '0' }}>💬 Comentarios ({comentarios.length})</h3>
+
+          {/* Listado de comentarios */}
+          {comentarios.length === 0 ? (
+            <p style={{ color: '#94a3b8', fontStyle: 'italic', margin: '0' }}>Aún no hay comentarios. ¡Sé el primero en opinar!</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {comentarios.map((com) => {
+                const esDueno = com.usuario_id === usuarioActual;
+                const esModOAdmin = rolUsuario === 'moderador' || rolUsuario === 'admin';
+                return (
+                  <div key={com.id} className="card glass-panel" style={{ padding: '1rem 1.25rem', background: 'rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--primary)' }}>
+                        {com.usuarios?.nombre || com.usuarios?.email || 'Comentarista'}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                        {new Date(com.fecha).toLocaleDateString('es-MX', { hour: '2-digit', minute: '2-digit' } as Intl.DateTimeFormatOptions)}
+                      </span>
+                    </div>
+                    <p style={{ margin: '0', fontSize: '0.95rem', color: '#e2e8f0', whiteSpace: 'pre-wrap' }}>{com.texto}</p>
+                    {(esDueno || esModOAdmin) && (
+                      <button 
+                        onClick={() => handleEliminarComentario(com.id)}
+                        style={{
+                          alignSelf: 'flex-end', background: 'none', border: 'none', 
+                          color: 'rgb(248, 113, 113)', fontSize: '0.8rem', cursor: 'pointer', padding: '0',
+                          textDecoration: 'underline'
+                        }}
+                      >
+                        Eliminar comentario
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Formulario para agregar comentarios */}
+          {rolUsuario !== 'visitante' ? (
+            <form onSubmit={handleEnviarComentario} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+              <label htmlFor="comentarioInput" style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>Escribe un comentario</label>
+              <textarea
+                id="comentarioInput"
+                value={nuevoComentario}
+                onChange={(e) => setNuevoComentario(e.target.value)}
+                placeholder="Escribe tu opinión o comparte información adicional..."
+                required
+                rows={3}
+                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)', color: 'white', outline: 'none', resize: 'vertical' }}
+              />
+              <button type="submit" className="btn btn-primary" disabled={publicandoComentario} style={{ alignSelf: 'flex-start', padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}>
+                {publicandoComentario ? 'Publicando...' : 'Enviar Comentario'}
+              </button>
+            </form>
+          ) : (
+            <div style={{ marginTop: '1.5rem', padding: '1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', textAlign: 'center', border: '1px dashed var(--glass-border)' }}>
+              <p style={{ margin: '0', fontSize: '0.9rem', color: '#94a3b8' }}>
+                ¿Quieres comentar? <Link href="/login" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Inicia sesión</Link> o <Link href="/registro" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Regístrate</Link> para unirte a la conversación.
+              </p>
+            </div>
+          )}
         </section>
       </article>
     </main>
