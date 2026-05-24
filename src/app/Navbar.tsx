@@ -3,10 +3,27 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { User } from '@supabase/supabase-js';
+import Link from 'next/link';
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [rol, setRol] = useState<string>('visitante');
+
+  async function cargarRol(userId: string) {
+    const { data } = await supabase.from('usuarios').select('rol').eq('id', userId).single();
+    if (data) setRol(data.rol);
+    else setRol('comentario');
+  }
+
+  async function solicitarRedactor() {
+    if (!user) return;
+    const { error } = await supabase.from('solicitudes_rol').insert({
+      user_id: user.id,
+      requested_role: 'redactor',
+    });
+    if (error) alert('Error al enviar solicitud: ' + error.message);
+    else alert('Solicitud de redactor enviada.');
+  }
 
   useEffect(() => {
     // Get current session
@@ -27,22 +44,6 @@ export default function Navbar() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const cargarRol = async (userId: string) => {
-    const { data } = await supabase.from('usuarios').select('rol').eq('id', userId).single();
-    if (data) setRol(data.rol);
-    else setRol('comentario');
-  };
-
-  const solicitarRedactor = async () => {
-    if (!user) return;
-    const { error } = await supabase.from('solicitudes_rol').insert({
-      user_id: user.id,
-      requested_role: 'redactor',
-    });
-    if (error) alert('Error al enviar solicitud: ' + error.message);
-    else alert('Solicitud de redactor enviada.');
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = '/';
@@ -54,25 +55,25 @@ export default function Navbar() {
         Portal Cultural
       </div>
       <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-        <a href="/" className="nav-link">
+        <Link href="/" className="nav-link">
           Inicio
-        </a>
-        <a href="/catalogo" className="nav-link">
+        </Link>
+        <Link href="/catalogo" className="nav-link">
           Catálogo
-        </a>
+        </Link>
         {user ? (
           <>
             {/* Redactar: solo redactores, moderadores y admins */}
             {(rol === 'redactor' || rol === 'moderador' || rol === 'admin') && (
-              <a href="/redactor" className="nav-link">
+              <Link href="/redactor" className="nav-link">
                 Redactar
-              </a>
+              </Link>
             )}
             {/* Moderacion: solo moderadores y admins */}
             {(rol === 'moderador' || rol === 'admin') && (
-              <a href="/moderacion" className="nav-link" style={{ color: 'var(--accent)' }}>
+              <Link href="/moderacion" className="nav-link" style={{ color: 'var(--accent)' }}>
                 Moderación
-              </a>
+              </Link>
             )}
             {/* Solicitar Redactor: solo usuarios con rol comentario */}
             {rol === 'comentario' && (
@@ -114,12 +115,12 @@ export default function Navbar() {
               gap: '1rem',
             }}
           >
-            <a href="/login" className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
+            <Link href="/login" className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
               Login
-            </a>
-            <a href="/registro" className="btn btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
+            </Link>
+            <Link href="/registro" className="btn btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
               Registro
-            </a>
+            </Link>
           </div>
         )}
       </div>

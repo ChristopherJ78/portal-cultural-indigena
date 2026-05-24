@@ -3,17 +3,45 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 
+interface Articulo {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  subtema: string;
+  estado: string;
+  resumen?: string;
+  contenido?: string;
+  fecha_creacion: string;
+}
+
+interface SolicitudRol {
+  id: string;
+  user_id: string;
+  requested_role: string;
+  status: string;
+  created_at: string;
+  usuarios?: {
+    email: string;
+  } | null;
+}
+
+interface Usuario {
+  id: string;
+  email: string;
+  rol: string;
+}
+
 export default function Moderacion() {
-  const [articulos, setArticulos] = useState<any[]>([]);
-  const [solicitudes, setSolicitudes] = useState<any[]>([]);
-  const [usuarios, setUsuarios] = useState<any[]>([]);
+  const [articulos, setArticulos] = useState<Articulo[]>([]);
+  const [solicitudes, setSolicitudes] = useState<SolicitudRol[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [cargando, setCargando] = useState(true);
   const [verificando, setVerificando] = useState(true);
   const [esAdmin, setEsAdmin] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
-    const verificarRol = async () => {
+    async function verificarRol() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         window.location.href = '/login';
@@ -34,12 +62,12 @@ export default function Moderacion() {
       setEsAdmin(data.rol === 'admin');
       setVerificando(false);
       cargarDatos();
-    };
+    }
 
     verificarRol();
   }, []);
 
-  const cargarDatos = async () => {
+  async function cargarDatos() {
     setCargando(true);
 
     // Artículos pendientes de aprobación
@@ -61,13 +89,27 @@ export default function Moderacion() {
       .select('id, email, rol')
       .order('email', { ascending: true });
 
-    if (artData) setArticulos(artData);
-    if (solData) setSolicitudes(solData);
-    if (usuariosData) setUsuarios(usuariosData);
+    if (artData) setArticulos(artData as Articulo[]);
+    if (solData) {
+      // Cast the relations properly to match the interface
+      const formattedSolicitudes = (solData as unknown as {
+        id: string;
+        user_id: string;
+        requested_role: string;
+        status: string;
+        created_at: string;
+        usuarios: { email: string } | { email: string }[] | null;
+      }[]).map(sol => ({
+        ...sol,
+        usuarios: Array.isArray(sol.usuarios) ? sol.usuarios[0] : (sol.usuarios || null)
+      })) as SolicitudRol[];
+      setSolicitudes(formattedSolicitudes);
+    }
+    if (usuariosData) setUsuarios(usuariosData as Usuario[]);
     setCargando(false);
-  };
+  }
 
-  const cambiarEstadoArticulo = async (id: string, nuevoEstado: string) => {
+  async function cambiarEstadoArticulo(id: string, nuevoEstado: string) {
     const { error } = await supabase
       .from('articulos')
       .update({ estado: nuevoEstado })
@@ -79,9 +121,9 @@ export default function Moderacion() {
       setMensaje(`✅ Artículo marcado como "${nuevoEstado}".`);
       cargarDatos();
     }
-  };
+  }
 
-  const procesarSolicitudRol = async (id: string, userId: string, decision: 'aprobado' | 'rechazado', requestedRole: string) => {
+  async function procesarSolicitudRol(id: string, userId: string, decision: 'aprobado' | 'rechazado', requestedRole: string) {
     // Si se aprueba, actualizar el rol del usuario
     if (decision === 'aprobado') {
       const { error: rolError } = await supabase
@@ -106,9 +148,9 @@ export default function Moderacion() {
       setMensaje(`✅ Solicitud de rol ${decision}.`);
       cargarDatos();
     }
-  };
+  }
 
-  const promoverAAdmin = async (userId: string) => {
+  async function promoverAAdmin(userId: string) {
     const { error } = await supabase
       .from('usuarios')
       .update({ rol: 'admin' })
@@ -120,7 +162,7 @@ export default function Moderacion() {
       setMensaje('✅ Usuario promovido a admin.');
       cargarDatos();
     }
-  };
+  }
 
   if (verificando) {
     return (

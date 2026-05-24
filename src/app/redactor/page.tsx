@@ -47,8 +47,8 @@ export default function Redactor() {
         setTitulo('');
         setDescripcion('');
       }
-    } catch (err: any) {
-      setMensaje('Error inesperado: ' + err.message);
+    } catch (err) {
+      setMensaje('Error inesperado: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setCargando(false);
     }
