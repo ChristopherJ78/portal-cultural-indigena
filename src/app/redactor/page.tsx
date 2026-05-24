@@ -7,6 +7,7 @@ export default function Redactor() {
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [subtema, setSubtema] = useState('cultura');
+  const [imagenUrl, setImagenUrl] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
@@ -31,21 +32,31 @@ export default function Redactor() {
     setMensaje('');
 
     try {
-      // Inserción básica a Supabase. Nota: RLS podría fallar si el usuario no está autenticado,
-      // pero para la demostración insertaremos de todos modos, asegúrate de tener una política que lo permita
-      // o inicia sesión primero.
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('articulos')
         .insert([
           { titulo, descripcion, subtema, estado: 'pendiente', autor_id: usuarioId }
-        ]);
+        ])
+        .select();
 
       if (error) {
         setMensaje('Error al enviar la propuesta: ' + error.message);
       } else {
+        const articuloId = data?.[0]?.id;
+        if (articuloId && imagenUrl.trim()) {
+          const { error: imgError } = await supabase
+            .from('imagenes')
+            .insert([
+              { url: imagenUrl.trim(), articulo_id: articuloId, descripcion: `Imagen de ${titulo}` }
+            ]);
+          if (imgError) {
+            console.error('Error al guardar la imagen:', imgError.message);
+          }
+        }
         setMensaje('¡Propuesta enviada con éxito! Está en estado Pendiente para moderación.');
         setTitulo('');
         setDescripcion('');
+        setImagenUrl('');
       }
     } catch (err) {
       setMensaje('Error inesperado: ' + (err instanceof Error ? err.message : String(err)));
@@ -100,6 +111,24 @@ export default function Redactor() {
             <option value="arquitectura" style={{color: 'black'}}>Arquitectura</option>
             <option value="vestimenta" style={{color: 'black'}}>Vestimenta</option>
           </select>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label htmlFor="imagenUrl" style={{ fontWeight: 'bold' }}>URL de Imagen Ilustrativa (Opcional)</label>
+          <input 
+            id="imagenUrl"
+            type="url" 
+            value={imagenUrl}
+            onChange={(e) => setImagenUrl(e.target.value)}
+            placeholder="https://ejemplo.com/imagen.jpg"
+            style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)', color: 'white', outline: 'none' }}
+          />
+          {imagenUrl.trim() && (
+            <div style={{ marginTop: '0.5rem', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', maxHeight: '200px' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imagenUrl.trim()} alt="Vista previa" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '200px', objectFit: 'cover' }} />
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

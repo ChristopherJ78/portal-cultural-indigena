@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <main className="container">
@@ -8,8 +10,8 @@ export default function Home() {
           recetas tradicionales y la rica cultura de los pueblos indígenas de México.
         </p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <a href="/catalogo" className="btn btn-primary">Explorar Catálogo</a>
-          <a href="/redactor" className="btn btn-secondary">Quiero Contribuir</a>
+          <Link href="/catalogo" className="btn btn-primary">Explorar Catálogo</Link>
+          <Link href="/redactor" className="btn btn-secondary">Quiero Contribuir</Link>
         </div>
       </section>
 
