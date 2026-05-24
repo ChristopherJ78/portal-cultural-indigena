@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 
 export default function Redactor() {
@@ -9,9 +9,24 @@ export default function Redactor() {
   const [subtema, setSubtema] = useState('cultura');
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [usuarioId, setUsuarioId] = useState<string | null>(null);
+  const [verificando, setVerificando] = useState(true);
+
+  // Verificar sesión al montar
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        window.location.href = '/login';
+      } else {
+        setUsuarioId(session.user.id);
+        setVerificando(false);
+      }
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!usuarioId) return;
     setCargando(true);
     setMensaje('');
 
@@ -22,7 +37,7 @@ export default function Redactor() {
       const { error } = await supabase
         .from('articulos')
         .insert([
-          { titulo, descripcion, subtema, estado: 'pendiente' }
+          { titulo, descripcion, subtema, estado: 'pendiente', autor_id: usuarioId }
         ]);
 
       if (error) {
@@ -38,6 +53,14 @@ export default function Redactor() {
       setCargando(false);
     }
   };
+
+  if (verificando) {
+    return (
+      <main className="container" style={{ textAlign: 'center', marginTop: '4rem' }}>
+        <p>Verificando permisos...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="container" style={{ maxWidth: '800px' }}>

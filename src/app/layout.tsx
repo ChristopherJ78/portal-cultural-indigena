@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Navbar from "./Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,16 +18,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
-        <nav className="navbar glass-panel">
-          <div className="logo" style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#f97316' }}>
-            Portal Cultural
-          </div>
-          <div className="nav-links">
-            <a href="/" className="nav-link">Inicio</a>
-            <a href="/catalogo" className="nav-link">Catálogo</a>
-            <a href="/redactor" className="nav-link">Redactores</a>
-          </div>
-        </nav>
+        <Navbar />
         {children}
       </body>
     </html>
