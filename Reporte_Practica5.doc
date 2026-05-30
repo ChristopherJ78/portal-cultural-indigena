@@ -1,0 +1,199 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<title>Reporte Práctica Unidad 5</title>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+<w:Zoom>100</w:Zoom>
+<w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  body {
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    line-height: 1.5;
+    color: #333333;
+    margin: 2cm;
+  }
+  h1 {
+    font-size: 24pt;
+    color: #c2410c;
+    border-bottom: 2px solid #c2410c;
+    padding-bottom: 5px;
+    margin-top: 20pt;
+  }
+  h2 {
+    font-size: 16pt;
+    color: #1e293b;
+    margin-top: 18pt;
+    border-bottom: 1px dashed #cbd5e1;
+    padding-bottom: 3px;
+  }
+  h3 {
+    font-size: 12pt;
+    color: #0f172a;
+    margin-top: 12pt;
+  }
+  p {
+    font-size: 11pt;
+    text-align: justify;
+    margin-bottom: 10pt;
+  }
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20pt;
+  }
+  .info-table td {
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 10.5pt;
+  }
+  .info-header {
+    background-color: #f8fafc;
+    font-weight: bold;
+    width: 30%;
+  }
+  .screenshot-box {
+    border: 2px dashed #94a3b8;
+    background-color: #f8fafc;
+    padding: 30px;
+    text-align: center;
+    border-radius: 8px;
+    margin: 15pt 0;
+    color: #64748b;
+    font-size: 10pt;
+    font-weight: bold;
+  }
+  .highlight-box {
+    background-color: #fff7ed;
+    border-left: 4px solid #ea580c;
+    padding: 10px 15px;
+    margin: 10pt 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .footer {
+    margin-top: 40pt;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+    font-size: 9pt;
+    color: #64748b;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <div style="text-align: center; margin-bottom: 30pt;">
+    <p style="font-size: 14pt; font-weight: bold; color: #64748b; margin: 0;">UNIVERSIDAD - PROGRAMACIÓN WEB</p>
+    <h1 style="border: none; margin: 10pt 0; font-size: 26pt; color: #ea580c;">Reporte de Práctica - Unidad 5</h1>
+    <p style="font-size: 16pt; font-weight: bold; color: #1e293b; margin: 0;">Despliegue y Consumo de Servicios en la Nube</p>
+    <p style="font-size: 11pt; color: #64748b; margin-top: 5pt;">Evolución del Portal Cultural: Integración Segura de Gemini AI y Despliegue en PaaS Vercel</p>
+  </div>
+
+  <h2>1. Datos Generales del Alumno</h2>
+  <table class="info-table">
+    <tr>
+      <td class="info-header">Nombre del Estudiante:</td>
+      <td>[Tu Nombre Completo Aquí]</td>
+    </tr>
+    <tr>
+      <td class="info-header">Asignatura:</td>
+      <td>Programación Web - Unidad 5</td>
+    </tr>
+    <tr>
+      <td class="info-header">Proyecto:</td>
+      <td>Portal Cultural de Pueblos Originarios de México</td>
+    </tr>
+    <tr>
+      <td class="info-header">Fecha de Entrega:</td>
+      <td>[Fecha de Hoy]</td>
+    </tr>
+    <tr>
+      <td class="info-header">Enlace de GitHub:</td>
+      <td><a href="https://github.com/ChristopherJ78/portal-cultural-indigena">https://github.com/ChristopherJ78/portal-cultural-indigena</a></td>
+    </tr>
+    <tr>
+      <td class="info-header">Enlace de Producción:</td>
+      <td>[URL de tu despliegue en Vercel, ej. https://portal-cultural-indigena.vercel.app]</td>
+    </tr>
+  </table>
+
+  <h2>2. Resumen Técnico del Proyecto</h2>
+  <p>
+    En esta práctica final de semestre, se ha evolucionado la aplicación web <strong>"Portal Cultural"</strong> para integrarla con un servicio en la nube real bajo el modelo <strong>SaaS (Software as a Service)</strong>: la API de Inteligencia Artificial de Google, <strong>Gemini 2.5 Flash</strong>. 
+  </p>
+  <p>
+    Para garantizar los estándares de seguridad exigidos (Tema 5.6), la integración se ha realizado mediante un <strong>API Route Handler en el servidor de Next.js (backend)</strong>. Esto evita exponer la clave criptográfica en el código del navegador cliente. Los datos viajan en formato estándar <strong>JSON</strong> sobre peticiones HTTP cifradas (HTTPS). Finalmente, la solución ha sido desplegada en producción a través de la plataforma <strong>PaaS Vercel</strong>, inyectando las claves confidenciales mediante variables de entorno cifradas directamente en el panel de control.
+  </p>
+
+  <div class="highlight-box">
+    <strong>Nota del Estudiante para el Profesor:</strong> Las evidencias visuales del correcto funcionamiento del Asistente de IA (Gemini), la comunicación segura de datos y el panel de despliegue en Vercel se encuentran documentadas con capturas a continuación.
+  </div>
+
+  <h2>3. Evidencias Visuales y de Funcionamiento</h2>
+
+  <h3>Evidencia 3.1: Interfaz del Formulario con Panel Asistente de IA</h3>
+  <p>
+    Muestra la pantalla de <em>Redactor</em> (URL local o de producción) donde se aprecia el nuevo bloque con efecto glassmorphic titulado <strong>"Asistente de Redacción Inteligente (Gemini AI)"</strong> con sus dos botones interactivos.
+  </p>
+  <div class="screenshot-box">
+    [ADJUNTAR AQUÍ CAPTURA DE PANTALLA DEL FORMULARIO REDACTOR MOSTRANDO EL ASISTENTE DE IA GEMINI]
+  </div>
+
+  <h3>Evidencia 3.2: Generación de Borrador de Artículo con Gemini (Consumo de API SaaS)</h3>
+  <p>
+    Captura que demuestra el proceso tras dar clic en "📝 Generar Borrador del Artículo". Se observa cómo el modelo Gemini en la nube redacta y rellena automáticamente el campo de <em>Contenido / Descripción</em> con un artículo cultural formal y bien estructurado basado únicamente en el título provisto.
+  </p>
+  <div class="screenshot-box">
+    [ADJUNTAR AQUÍ CAPTURA DE PANTALLA CON EL TEXTO GENERADO POR IA DENTRO DE LA CAJA DE DESCRIPCIÓN]
+  </div>
+
+  <h3>Evidencia 3.3: Inyección de Vocabulario y Glosario en Lengua Originaria</h3>
+  <p>
+    Evidencia que demuestra la función "🌐 Agregar Glosario Indígena". La IA analiza el texto de la descripción, identifica conceptos clave y añade una sección de vocabulario con traducción y guía fonética al final del texto.
+  </p>
+  <div class="screenshot-box">
+    [ADJUNTAR AQUÍ CAPTURA DEL GLOSARIO INDÍGENA INYECTADO AL FINAL DEL TEXTO EN EL TEXTAREA]
+  </div>
+
+  <h3>Evidencia 3.4: Envío Exitoso de la Propuesta a la Base de Datos (Supabase)</h3>
+  <p>
+    Muestra la notificación verde de éxito ("¡Propuesta enviada con éxito!") después de que el redactor pulsa "🚀 Enviar a Moderación", confirmando que los datos procesados por IA se han guardado con estado "pendiente" en las tablas seguras de Supabase.
+  </p>
+  <div class="screenshot-box">
+    [ADJUNTAR AQUÍ CAPTURA DE PANTALLA DEL MENSAJE DE ÉXITO AL ENVIAR A MODERACIÓN]
+  </div>
+
+  <h3>Evidencia 3.5: Configuración Segura de Variables de Entorno en Vercel (PaaS)</h3>
+  <p>
+    Captura de pantalla de la sección de Variables de Entorno en el panel de control del proyecto dentro de Vercel (<em>Settings > Environment Variables</em>). Demuestra que la clave <code>API_KEY</code> (o <code>GEMINI_API_KEY</code>) y las credenciales de <code>NEXT_PUBLIC_SUPABASE_URL</code> y <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> están configuradas en la nube de forma encriptada e inyectada en el servidor, sin tocar el repositorio público de GitHub.
+  </p>
+  <div class="screenshot-box">
+    [ADJUNTAR AQUÍ CAPTURA DE PANTALLA DE LAS VARIABLES DE ENTORNO EN EL PANEL DE VERCEL]
+  </div>
+
+  <h3>Evidencia 3.6: Aplicación en Vivo en Producción (Vercel App)</h3>
+  <p>
+    Captura de pantalla que muestra la barra de navegación del navegador con la URL pública generada por Vercel (ej. <code>https://nombre-de-tu-app.vercel.app</code>) y la página principal funcionando perfectamente en la web.
+  </p>
+  <div class="screenshot-box">
+    [ADJUNTAR AQUÍ CAPTURA DE PANTALLA DE LA APP EN PRODUCCIÓN CON SU URL PÚBLICA VISIBLE]
+  </div>
+
+  <h2>4. Conclusión de la Práctica</h2>
+  <p>
+    La realización de esta práctica final ha permitido consolidar de forma práctica la interacción entre múltiples capas y proveedores de servicios en la nube. El uso de plataformas como servicio (PaaS Vercel y Supabase) acelera drásticamente el desarrollo de software al permitir que los equipos de ingeniería se enfoquen enteramente en la lógica de negocio, delegando el aprovisionamiento, escalabilidad y seguridad de la infraestructura a proveedores hiper-especializados.
+  </p>
+  <p>
+    Asimismo, la integración de la API de Gemini demuestra el potencial del modelo SaaS para infundir inteligencia artificial avanzada a nuestras interfaces mediante protocolos ligeros y estandarizados (JSON sobre HTTPS). Finalmente, se reforzó el principio fundamental de seguridad del "mínimo privilegio" y confidencialidad al aislar las credenciales críticas a nivel del servidor por medio de variables de entorno inyectadas en tiempo de ejecución.
+  </p>
+
+  <div class="footer">
+    <p>Programación Web - Práctica Unidad 5: Despliegue y Consumo de Servicios en la Nube - Semestre de Ingeniería 2026</p>
+  </div>
+
+</body>
+</html>
